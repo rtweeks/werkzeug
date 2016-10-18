@@ -338,6 +338,10 @@ class LocalProxy(object):
             return []
 
     def __getattr__(self, name):
+        # This fixes doctest (which, for Python >=3.5, uses inspect.unwrap)
+        if name == '__wrapped__':
+            return super(LocalProxy, self).__getattr__(name)
+
         if name == '__members__':
             return dir(self._get_current_object())
         return getattr(self._get_current_object(), name)
