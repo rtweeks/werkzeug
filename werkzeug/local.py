@@ -10,8 +10,13 @@
 """
 import copy
 from functools import update_wrapper
+import os
 from werkzeug.wsgi import ClosingIterator
 from werkzeug._compat import PY2, implements_bool
+
+PROXY_WRAPPED_ATTR = not (
+    os.environ.get('WERKZEUG_BLOCK_WRAPPED_PROXYING', False)
+)
 
 # since each thread has its own greenlet we can just use those as identifiers
 # for the context.  If greenlets are not available we fall back to the
@@ -339,7 +344,7 @@ class LocalProxy(object):
 
     def __getattr__(self, name):
         # This fixes doctest (which, for Python >=3.5, uses inspect.unwrap)
-        if name == '__wrapped__':
+        if (not PROXY_WRAPPED_ATTR) and name == '__wrapped__':
             return super(LocalProxy, self).__getattr__(name)
 
         if name == '__members__':
